@@ -1,0 +1,11 @@
+var f = {
+    imgBigClick: function(e){
+        console.log(JSON.stringify(e.target)
+        
+        );
+    }
+}
+
+module.exports = {
+    imgBigClick: f.imgBigClick
+}

@@ -1,0 +1,11 @@
+<!-- 弹窗 -->
+<view class="modal_self" >
+    <view class="modal_box suc" wx:if="{{isSuccess}}">
+        <image class="modal_img" src="../../pages/logs/images/success.jpg"></image>
+        <View class="text" catchtap="reload">下一关</View>
+    </view>
+    <view class="modal_box fail" wx:if="{{isFail}}">
+        <image class="modal_img" src="../../pages/logs/images/fail.jpg"></image>
+        <View class="text" catchtap="reload">重玩</View>
+    </view>
+</view>
