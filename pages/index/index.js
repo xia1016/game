@@ -26,7 +26,7 @@ Page({
         showModal: false,
 
     },
-        // 下方图片点击
+    // 下方图片点击
     imgListBigClick: function (e) {
         const audio = wx.createInnerAudioContext()
         audio.src = '/pages/logs/audio/click.mp3'
@@ -143,28 +143,21 @@ Page({
             if (this.data.imgListItem2.length >= 5) {
                 if (this.data.imgListItem3.length >= 5) {
                     if (this.data.imgListItem4.length >= 5) {
-                        const random3 = Math.random() > 0.1 ? 0 : 1
-                        if (random3 === 1) {
+                        if (parseInt(this.data.imgListItem5.length % 2) === 0) {
                             this.data.imgListItem5.push(url)
                         } else {
                             this.data.imgListItem5.unshift(url)
                         }
+                    } else if (parseInt(this.data.imgListItem4.length % 2) === 0) {
+                        this.data.imgListItem4.unshift(url)
                     } else {
-                        const random2 = Math.random() > 0.5 ? 0 : 1
-                        if (random2 === 0) {
-                            this.data.imgListItem4.push(url)
-                        } else {
-                            this.data.imgListItem4.unshift(url)
-                        }
+                        this.data.imgListItem4.push(url)
                     }
                 } else {
-                    const random = Math.random() > 0.5 ? 0 : 1
-                    if (random === 1) {
-                        this.data.imgListItem3.push(url)
-                    } else {
-                        this.data.imgListItem3.unshift(url)
-                    }
+                    this.data.imgListItem3.unshift(url)
                 }
+            } else if (this.data.imgListItem2.length >= 3) {
+                this.data.imgListItem2.unshift(url)
             } else {
                 this.data.imgListItem2.push(url)
             }
