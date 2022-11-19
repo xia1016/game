@@ -1,0 +1,9 @@
+<!-- home.wxml -->
+<view class="container">
+    <view class="icon">
+        <image class="home_bg" src="../logs/images/home.gif" mode="aspectFit|aspectFill|widthFix" lazy-load="false" binderror="" bindload="" />
+          
+         <view class="text" bindtap='handleStart'>开始</view>
+         
+    </view>
+</view>
