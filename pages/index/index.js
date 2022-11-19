@@ -55,10 +55,10 @@ Page({
             this.selectComponent('.modal').success()
             return
         } else if (arr.length === this.data.success.first1.length) {
-            this.setData({
-                showModal: true,
-            })
-            this.selectComponent('.modal').fail()
+            // this.setData({
+            //     showModal: true,
+            // })
+            // this.selectComponent('.modal').fail()
         }
     },
     // 上方图片点击
@@ -123,7 +123,6 @@ Page({
         let fileListRandom = [1, 2, 3, 4]
         this.arrRandom(arr)
         this.arrRandom(fileListRandom)
-        console.log(~~(Math.random() * fileListRandom.length));
         this.setData({
             imgListItem1: [],
             imgListItem2: [],
@@ -143,10 +142,20 @@ Page({
             if (this.data.imgListItem2.length >= 5) {
                 if (this.data.imgListItem3.length >= 5) {
                     if (this.data.imgListItem4.length >= 5) {
-                        if (parseInt(this.data.imgListItem5.length % 2) === 0) {
-                            this.data.imgListItem5.push(url)
+                        if (this.data.imgListItem5.length >= 4) {
+                            if (Math.random() > 0.9) {
+                                this.data.imgListItem5.push(url)
+                            } else {
+                                const random = ~~(Math.random() * this.data.imgListItem1.length)
+                                this.data.imgListItem5.push(this.data.imgListItem1[random])
+                                this.data.imgListItem1.splice(random, 1, url)
+                            }
                         } else {
-                            this.data.imgListItem5.unshift(url)
+                            if (parseInt(this.data.imgListItem5.length % 2) === 0) {
+                                this.data.imgListItem5.push(url)
+                            } else {
+                                this.data.imgListItem5.unshift(url)
+                            }
                         }
                     } else if (parseInt(this.data.imgListItem4.length % 2) === 0) {
                         this.data.imgListItem4.unshift(url)
