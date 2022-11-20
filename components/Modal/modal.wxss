@@ -2,11 +2,11 @@
     position: absolute;
     top: 20%;
     left: 11.5%;
-    width: 300px;
-    height: 370px;
+    width: 300rpx;
+    height: 370rpx;
     background-color: saddlebrown;
-    border-radius: 30px;
-    box-shadow: 0 0 10px 0;
+    border-radius: 30rpx;
+    box-shadow: 0 0 10rpx 0;
     z-index: 10;
     overflow: hidden;
     display: flex;
@@ -14,11 +14,11 @@
     text-align: center;
 }
 .modal_img {
-    width: 300px;
-    height: 310px;
+    width: 300rpx;
+    height: 310rpx;
 }
 .text {
-    font-size: 40px;
+    font-size: 40rpx;
     font-weight: bold;
     line-height: 1.2;
 }

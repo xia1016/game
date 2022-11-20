@@ -1,6 +1,6 @@
 <!--index.wxml-->
 <view class="container">
-    <image class="img1" src="../logs/images/img1.jpg"></image>
+    <!-- <image class="img1" src="../logs/images/img1.jpg"></image> -->
     <view class="{{boxClassName}}">
         <image class="bg" src="https://i02.appmifile.com/mi-com-product/fly-birds/m/test/img-{{fileList}}/main.jpg" />
         <view class="{{className}}">

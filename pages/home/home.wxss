@@ -9,6 +9,7 @@
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
+    background-color: #000;
   }
   .home_bg {
     position: absolute;
@@ -19,29 +20,30 @@
   }
   
   .text{
-    width: 120px;
-    height: 60px;
+    width: 200rpx;
+    height: 80rpx;
     display:flex;
     justify-content: center;
     align-items: center;
     background-color: rgb(189, 93, 9);
     z-index: 2;
-    border-radius: 10px;
-    border: 1px solid #fff;
+    border-radius: 10rpx;
+    border: 1rpx solid #fff;
     position: relative;
     color: #fff;
     font-weight: normal;
-    font-size: 36px;
+    font-size: 48rpx;
     font-weight: 800;
     line-height: 1;
+    margin-top: 400rpx;
     /* animation: split 5s steps(18) infinite ; */
   }
   /* @keyframes split {
     0%{
-      width: 1px;
+      width: 1rpx;
     }
     100%{
-      width: 200px;
+      width: 200rpx;
     }
   
   } */

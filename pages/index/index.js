@@ -29,7 +29,7 @@ Page({
     // 下方图片点击
     imgListBigClick: function (e) {
         const audio = wx.createInnerAudioContext()
-        audio.src = '/pages/logs/audio/click.mp3'
+        audio.src = '/pages/logs/audio/drop.mp3'
         audio.play()
         this.rule1(e.target.dataset.url)
         this.data.imgListBig.splice(e.target.dataset.index, 1)
