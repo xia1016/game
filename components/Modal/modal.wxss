@@ -1,9 +1,10 @@
 .modal_self {
     position: absolute;
     top: 20%;
-    left: 11.5%;
-    width: 600rpx;
-    height: 770rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500rpx;
+    height: 640rpx;
     background-color: saddlebrown;
     border-radius: 60rpx;
     box-shadow: 0 0 20rpx 0;
@@ -14,11 +15,11 @@
     text-align: center;
 }
 .modal_img {
-    width: 600rpx;
-    height: 630rpx;
+    width: 500rpx;
+    height: 530rpx;
 }
 .text {
-    font-size: 100rpx;
+    font-size: 80rpx;
     font-weight: bold;
     line-height: 1.2;
 }
