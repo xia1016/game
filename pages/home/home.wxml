@@ -1,9 +1,20 @@
 <!-- home.wxml -->
 <view class="container">
-    <view class="icon">
-        <image class="home_bg" src="../logs/images/home.gif" mode="aspectFit|aspectFill|widthFix" lazy-load="false" binderror="" bindload="" />
-          
-         <view class="text" bindtap='handleStart'>开始</view>
-         
-    </view>
+    <a href="#" class="button button--bird" bindtap='handleStart'>
+        <div class="button__wrapper">
+            <span class="button__text">PLAY</span>
+        </div>
+
+        <div class="birdBox">
+            <div class="bird wakeup">
+                <div class="bird__face"></div>
+            </div>
+            <div class="bird wakeup">
+                <div class="bird__face"></div>
+            </div>
+            <div class="bird">
+                <div class="bird__face"></div>
+            </div>
+        </div>
+    </a>
 </view>
