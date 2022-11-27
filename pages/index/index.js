@@ -55,10 +55,10 @@ Page({
             this.selectComponent('.modal').success()
             return
         } else if (arr.length === this.data.success.first1.length) {
-            // this.setData({
-            //     showModal: true,
-            // })
-            // this.selectComponent('.modal').fail()
+            this.setData({
+                showModal: true,
+            })
+            this.selectComponent('.modal').fail()
         }
     },
     // 上方图片点击

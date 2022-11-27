@@ -2,7 +2,7 @@
 <view class="modal_self" >
     <view class="modal_box suc" wx:if="{{isSuccess}}">
         <image class="modal_img" src="../../pages/logs/images/success.jpg"></image>
-        <View class="text" catchtap="reload">下一关</View>
+        <View class="text" catchtap="reload">算你厉害</View>
     </view>
     <view class="modal_box fail" wx:if="{{isFail}}">
         <image class="modal_img" src="../../pages/logs/images/fail.jpg"></image>
