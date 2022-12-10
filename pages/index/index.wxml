@@ -1,38 +1,20 @@
-<!--index.wxml-->
+<!-- home.wxml -->
 <view class="container">
-    <view class="{{boxClassName}}">
-        <image class="bg" src="cloud://cloud1-2gqrm6p7df6687c1.636c-cloud1-2gqrm6p7df6687c1-1314673606/game-img/img-{{fileList}}/main.jpg" />
-        <view class="{{className}}">
-            <image class="icons" wx:for="{{imgListItem1}}" wx:key="item"
-                src="cloud://cloud1-2gqrm6p7df6687c1.636c-cloud1-2gqrm6p7df6687c1-1314673606/game-img/img-{{fileList}}/imageonline/{{item}}.jpg"
-                catchtap="imgListClick" data-flag='1' data-url='{{item}}' data-index='{{index}}' />
-        </view>
-        <view class="{{className}}">
-            <image class="icons" wx:for="{{imgListItem2}}" wx:key="item"
-                src="cloud://cloud1-2gqrm6p7df6687c1.636c-cloud1-2gqrm6p7df6687c1-1314673606/game-img/img-{{fileList}}/imageonline/{{item}}.jpg"
-                catchtap="imgListClick" data-flag='2' data-url='{{item}}' data-index='{{index}}' />
-        </view>
-        <view class="{{className}}">
-            <image class="icons" wx:for="{{imgListItem3}}" wx:key="item"
-                src="cloud://cloud1-2gqrm6p7df6687c1.636c-cloud1-2gqrm6p7df6687c1-1314673606/game-img/img-{{fileList}}/imageonline/{{item}}.jpg"
-                catchtap="imgListClick" data-flag='3' data-url='{{item}}' data-index='{{index}}' />
-        </view>
-        <view class="{{className}}">
-            <image class="icons" wx:for="{{imgListItem4}}" wx:key="item"
-                src="cloud://cloud1-2gqrm6p7df6687c1.636c-cloud1-2gqrm6p7df6687c1-1314673606/game-img/img-{{fileList}}/imageonline/{{item}}.jpg"
-                catchtap="imgListClick" data-flag='4' data-url='{{item}}' data-index='{{index}}' />
-        </view>
-        <view class="{{className}}">
-            <image class="icons" wx:for="{{imgListItem5}}" wx:key="item"
-                src="cloud://cloud1-2gqrm6p7df6687c1.636c-cloud1-2gqrm6p7df6687c1-1314673606/game-img/img-{{fileList}}/imageonline/{{item}}.jpg"
-                catchtap="imgListClick" data-flag='5' data-url='{{item}}' data-index='{{index}}' />
-        </view>
-    </view>
-    <view class="box_2">
-        <image class="icons" wx:for="{{imgListBig}}" wx:key="item"
-            src="cloud://cloud1-2gqrm6p7df6687c1.636c-cloud1-2gqrm6p7df6687c1-1314673606/game-img/img-{{fileList}}/imageonline/{{item}}.jpg"
-            catchtap="imgListBigClick" data-url='{{item}}' data-index='{{index}}' />
-    </view>
-    <view class="replay" catchtap="initImgList">重玩</view>
-    <modal class="modal" bind:initImgList='initImgList' wx:if="{{showModal}}"></modal>
+    <a href="#" class="button button--bird" bindtap='handleStart'>
+        <div class="button__wrapper">
+            <span class="button__text">PLAY</span>
+        </div>
+
+        <div class="birdBox">
+            <div class="bird wakeup">
+                <div class="bird__face"></div>
+            </div>
+            <div class="bird wakeup">
+                <div class="bird__face"></div>
+            </div>
+            <div class="bird">
+                <div class="bird__face"></div>
+            </div>
+        </div>
+    </a>
 </view>

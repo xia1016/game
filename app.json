@@ -1,13 +1,13 @@
 {
     "pages": [
-        "pages/home/home",
         "pages/index/index",
+        "pages/home/home",
         "pages/logs/logs"
     ],
     "window": {
         "backgroundTextStyle": "light",
         "navigationBarBackgroundColor": "#fff",
-        "navigationBarTitleText": "Weixin",
+        "navigationBarTitleText": "阳了算你厉害",
         "navigationBarTextStyle": "black"
     },
     "style": "v2",
