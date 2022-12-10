@@ -30,7 +30,6 @@ Component({
             })
         },
         reload() {
-            console.log(222);
             this.triggerEvent('initImgList')
         }
     },
