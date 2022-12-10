@@ -24,6 +24,7 @@ Page({
             first2: ["00", "05", "10", "15", "20", "01", "06", "11", "16", "21", "02", "07", "12", "17", "22", "03", "08", "13", "18", "23", "04", "09", "14", "19", "24"],
         },
         showModal: false,
+        count: 0
 
     },
     // 下方图片点击
@@ -39,9 +40,6 @@ Page({
         })
         let arr = this.data.imgListItem1.concat(this.data.imgListItem2.concat(this.data.imgListItem3.concat(this.data.imgListItem4.concat(this.data.imgListItem5))))
         let arr1 = arr.toString()
-        console.log(arr1);
-
-        console.log(this.data.success.first2?.toString());
         if (this.data.boxClassName === 'box_wrap' && arr1 === this.data.success.first1?.toString()) {
             this.setData({
                 showModal: true,
@@ -90,7 +88,8 @@ Page({
             imgListItem3: this.data.imgListItem3,
             imgListItem4: this.data.imgListItem4,
             imgListItem5: this.data.imgListItem5,
-            imgListBig: this.data.imgListBig
+            imgListBig: this.data.imgListBig,
+            count: this.data.count + 1
         })
     },
     // 数组随机排列
@@ -120,7 +119,7 @@ Page({
         let name = nameList[num]
         let boxName = boxNameList[num]
         let arr = this.answer()
-        let fileListRandom = [1, 2, 3, 4]
+        let fileListRandom = [1, 2, 3]
         this.arrRandom(arr)
         this.arrRandom(fileListRandom)
         this.setData({
@@ -143,13 +142,9 @@ Page({
                 if (this.data.imgListItem3.length >= 5) {
                     if (this.data.imgListItem4.length >= 5) {
                         if (this.data.imgListItem5.length >= 4) {
-                            if (Math.random() > 0.9) {
-                                this.data.imgListItem5.push(url)
-                            } else {
-                                const random = ~~(Math.random() * this.data.imgListItem1.length)
-                                this.data.imgListItem5.push(this.data.imgListItem1[random])
-                                this.data.imgListItem1.splice(random, 1, url)
-                            }
+                            const random = ~~(('0.' + this.data.count) * this.data.imgListItem1.length)
+                            this.data.imgListItem5.push(this.data.imgListItem1[random])
+                            this.data.imgListItem1.splice(random, 1, url)
                         } else {
                             if (parseInt(this.data.imgListItem5.length % 2) === 0) {
                                 this.data.imgListItem5.push(url)
