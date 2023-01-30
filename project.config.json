@@ -12,6 +12,7 @@
     "coverView": false,
     "autoAudits": false,
     "showShadowRootInWxmlPanel": false,
+    "scopeDataCheck": false,
     "uglifyFileName": false,
     "checkInvalidKey": true,
     "checkSiteMap": true,
@@ -35,8 +36,7 @@
     "disableUseStrict": false,
     "showES6CompileOption": false,
     "useCompilerPlugins": false,
-    "ignoreUploadUnusedFiles": true,
-    "scopeDataCheck": false
+    "ignoreUploadUnusedFiles": true
   },
   "compileType": "game",
   "libVersion": "2.20.1",

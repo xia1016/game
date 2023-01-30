@@ -51,3 +51,26 @@ export function getEventPosition(ev) {
   }
   return { x: x, y: y };
 }
+
+// 分享
+export function autoShare() {
+ wx.shareAppMessage({
+  title:'你的好友正在邀请你～',
+  imageUrl:'https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-1.jpg'
+})
+}
+
+export function login() {
+  // 获取 openid
+  wx.cloud.callFunction({
+    name: 'login',
+    success: res => {
+      window.openid = res.result.openid
+      console.log(res);
+      // this.prefetchHighScore()
+    },
+    fail: err => {
+      console.error('get openid failed with error', err)
+    }
+  })
+}
