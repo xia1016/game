@@ -1,7 +1,7 @@
 const data = {
   urlList: [
-    'https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-9.jpg',
     'https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-1.jpg',
+    'https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-9.jpg',
     'https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-7.jpg',
     'https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-8.jpg',
     'https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-4.jpg',
@@ -20,6 +20,8 @@ const data = {
   answer:[],
   count: 0,
   smallImgList: [],
+  // 你的分数
+  achievement: 0,
 }
 
 export default data

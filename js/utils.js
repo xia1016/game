@@ -11,6 +11,8 @@
  * @param {图片宽} width
  * @param {图片高} height
  * @param {路径} url
+ * @param {是否画字} isAchievement
+ * @param {画什么字} data
  */
 export const renderImg = (
   ctx,
@@ -23,20 +25,25 @@ export const renderImg = (
   vertical,
   width,
   height,
-  url
+  url,
+  isAchievement,
+  data,
+  textWidth,
+  textHeight
 ) => {
   var img = wx.createImage();
-  img.src = url;
+  img.src = url || '';
   img.onload = function () {
     ctx.globalAlpha = opacity;
     ctx.drawImage(img, sx, sy, sw, sh, horizontal, vertical, width, height);
+    isAchievement && fillText(ctx,data,'36px Arial', '#fff',textWidth,textHeight,500)
   };
 };
 
 // 打乱数组顺序
 export const randomArr = (oldArr) => {
   let arr = JSON.parse(JSON.stringify(oldArr));
-  return arr.sort(() => Math.random() - 0.5)
+  return arr.sort(() => Math.random() - 0.5);
 };
 
 // 处理点击坐标
@@ -54,23 +61,40 @@ export function getEventPosition(ev) {
 
 // 分享
 export function autoShare() {
- wx.shareAppMessage({
-  title:'你的好友正在邀请你～',
-  imageUrl:'https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-1.jpg'
-})
+  wx.shareAppMessage({
+    title: "你的好友正在邀请你～",
+    imageUrl:
+      "https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/img/img-1.jpg",
+  });
 }
 
 export function login() {
   // 获取 openid
   wx.cloud.callFunction({
-    name: 'login',
-    success: res => {
-      window.openid = res.result.openid
+    name: "login",
+    success: (res) => {
+      window.openid = res.result.openid;
       console.log(res);
       // this.prefetchHighScore()
     },
-    fail: err => {
-      console.error('get openid failed with error', err)
-    }
-  })
+    fail: (err) => {
+      console.error("get openid failed with error", err);
+    },
+  });
+}
+
+/**
+ *
+ * @param {canvas} ctx
+ * @param {内容} data
+ * @param {字体大小} fontSize
+ * @param {字体颜色} fontColor
+ * @param {X轴} x
+ * @param {Y轴} y
+ * @param {最大宽} maxWidth
+ */
+export function fillText (ctx, data, fontSize, fontColor, x, y,maxWidth) {
+  ctx.font = fontSize;
+  ctx.fillStyle = fontColor;
+  ctx.fillText(`分数: ${data}`, x, y, maxWidth);
 }
