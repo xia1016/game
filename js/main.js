@@ -147,34 +147,59 @@ export default function Main() {
           ? true
           : false;
 
+      if (isSuccess) {
+        data.count++;
+        data.achievement += 25;
+        ctx.clearRect(0, 0, width, 100);
+        renderImg(
+          ctx,
+          1,
+          0,
+          0,
+          width,
+          100,
+          0,
+          0,
+          width,
+          100,
+          data.bg,
+          true,
+          data.achievement,
+          width / 5,
+          height / 10
+        );
+      }else {
+        data.achievement -= 25;
+        ctx.clearRect(0, 0, width, 100);
+        renderImg(
+          ctx,
+          1,
+          0,
+          0,
+          width,
+          100,
+          0,
+          0,
+          width,
+          100,
+          data.bg,
+          true,
+          data.achievement,
+          width / 5,
+          height / 10
+        );
+      }
       wx.showModal({
         title: isSuccess ? "恭喜过关" : "失败",
-        content: isSuccess ? "哎呀我去，厉害呀！大神带带我～╭(⊙o⊙)╮" : "再整一下子，你肯定行！干巴爹！ (๑•̀ㅂ•́)و✧",
+        content: isSuccess
+          ? "哎呀我去，厉害呀！大神带带我～╭(⊙o⊙)╮"
+          : "再整一下子，你肯定行！干巴爹！ (๑•̀ㅂ•́)و✧",
         confirmText: isSuccess ? "下一关" : "重玩",
         cancelText: "分享",
         success(res) {
           if (res.confirm) {
             if (isSuccess) {
               data.count++;
-              data.achievement += 25;
-              ctx.clearRect(0, 0, width, 100);
-              renderImg(
-                ctx,
-                1,
-                0,
-                0,
-                width,
-                100,
-                0,
-                0,
-                width,
-                100,
-                data.bg,
-                true,
-                data.achievement,
-                width / 5,
-                height / 10
-              );
               if (data.count >= data.urlList.length - 1) {
                 data.count = 0;
                 wx.showModal({
@@ -194,25 +219,6 @@ export default function Main() {
                 init(ctx, width, height, randomAbscissa, randomOrdinate);
               }
             } else {
-              data.achievement -= 25;
-              ctx.clearRect(0, 0, width, 100);
-              renderImg(
-                ctx,
-                1,
-                0,
-                0,
-                width,
-                100,
-                0,
-                0,
-                width,
-                100,
-                data.bg,
-                true,
-                data.achievement,
-                width / 5,
-                height / 10
-              );
               init(ctx, width, height, randomAbscissa, randomOrdinate);
             }
           } else if (res.cancel) {
