@@ -36,10 +36,11 @@
     "disableUseStrict": false,
     "showES6CompileOption": false,
     "useCompilerPlugins": false,
-    "ignoreUploadUnusedFiles": true
+    "ignoreUploadUnusedFiles": true,
+    "condition": false
   },
   "compileType": "game",
-  "libVersion": "2.20.1",
+  "libVersion": "2.30.2",
   "appid": "wx0add7bcf02e3bb93",
   "projectname": "game",
   "packOptions": {
@@ -50,5 +51,7 @@
     "tabIndent": "insertSpaces",
     "tabSize": 2
   },
+  "simulatorType": "wechat",
+  "simulatorPluginLibVersion": {},
   "condition": {}
 }
