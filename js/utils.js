@@ -1,3 +1,6 @@
+import { baseUrl } from './const'
+import data from "./data";
+
 /**
  *
  * @param {canvas} ctx
@@ -27,25 +30,66 @@ export const renderImg = (
   height,
   img,
   isAchievement,
-  // data,
-  // textWidth,
-  // textHeight
+  data // 假设data是你想绘制的文本信息
 ) => {
-  // var img = wx.createImage();
-  // img.onload = function () {
+  // 清除指定区域
+  ctx.clearRect(horizontal, vertical, width, height);
+
+  // 设置透明度
   ctx.globalAlpha = opacity;
+
+  // 绘制图像
   ctx.drawImage(img, sx, sy, sw, sh, horizontal, vertical, width, height);
-  isAchievement &&''
-    // fillText(ctx, data, "36px Arial", "#333", textWidth, textHeight, 500);
-  // };
-  // img.src = url || '';
+
+  // 如果需要绘制文本
+  if (isAchievement) {
+    ctx.fillStyle = "#333"; // 设置文本颜色
+    ctx.font = "36px Arial"; // 设置文本样式
+    ctx.fillText(data, horizontal, vertical + 36); // 绘制文本，这里假设文本从horizontal, vertical + 36的位置开始
+  }
 };
 
-export function creatAudio(innerAudioContext,src,autoplay,loop) {
+let onEndedCallback;
+export function createAudio(innerAudioContext, src, autoplay, loop,isNeedNext) {
   innerAudioContext.src = src;
-  innerAudioContext.autoplay = autoplay
-  innerAudioContext.loop = loop
-  innerAudioContext.play();
+  innerAudioContext.autoplay = autoplay;
+  innerAudioContext.loop = loop;
+
+   // 定义 onEnded 事件处理函数
+  onEndedCallback = () => {
+    if (isNeedNext) {
+      playNextSong();
+    }
+  };
+
+  // 根据 isNeedNext 决定是否添加 onEnded 事件监听器
+  if (isNeedNext) {
+    innerAudioContext.onEnded(onEndedCallback);
+  }
+}
+
+// 播放下一首音乐
+export function playNextSong() {
+  // 创建新的音频上下文并播放下一首
+  const nextSongAudioContext = wx.createInnerAudioContext();
+  createAudio(nextSongAudioContext,baseUrl + data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)], true, false,true);
+}
+
+// 暂停
+export function pauseAudio(innerAudioContext) {
+  innerAudioContext.pause();
+  // 暂停时不需要移除 onEnded 监听器，因为我们希望重新开始后还能触发
+  innerAudioContext.offEnded(() => {});
+}
+
+// 重新开始
+export function resumeAudio(innerAudioContext) {
+  innerAudioContext.play(); // 如果没有设置 src，直接播放
+   // 定义 onEnded 事件处理函数
+   onEndedCallback = () => {
+      playNextSong();
+  };
+  innerAudioContext.onEnded(onEndedCallback);
 }
 
 // 打乱数组元素顺序
@@ -75,8 +119,7 @@ export function getEventPosition(ev) {
 export function autoShare(url) {
   wx.shareAppMessage({
     title: "你的好友正在邀请你～",
-    imageUrl:
-     url
+    imageUrl: url,
   });
 }
 
@@ -87,7 +130,6 @@ export function login() {
     success: (res) => {
       window.openid = res.result.openid;
       console.log(res);
-      // this.prefetchHighScore()
     },
     fail: (err) => {
       console.error("get openid failed with error", err);
@@ -181,3 +223,4 @@ export function drawButton(
   ctx.textBaseline = "middle";
   ctx.fillText(text, startPoint.x + width / 2, startPoint.y + height / 2);
 }
+

@@ -3,22 +3,58 @@ import {
   getEventPosition,
   randomArr,
   autoShare,
-  creatAudio,
+  createAudio,
+  drawButton,
+  pauseAudio,
+  resumeAudio
 } from "./utils";
+import { baseUrl } from './const'
 import { init } from "./init";
 import data from "./data";
-export default function Main(ctx, images, needUpdate) {
+export default function Main(ctx, images, count, goBackNum, seeHd) {
+  const loadNextImg = () => {
+    var image = wx.createImage();
+    console.log('=== data.count: ', data.urlList.length,data.count)
+    image.src = baseUrl + data.urlList[data.urlList.length - 1 === data.count ? 1 : data.count + 1]
+    !(data.urlList.length - 1 === data.count) && images.push(image)
+    for (let i = 0; i < images.length - 1; i++) {
+      const element = images[i].src;
+      console.log('src----------', element,);
+    }
+  } 
+
+  let isSuccess = false;
+  data.count = count;
+  data.seeHd = seeHd;
   data.page = 1;
   var width = wx.getSystemInfoSync().windowWidth;
   var height = wx.getSystemInfoSync().windowHeight;
-
+  console.log(width, height);
   ctx.clearRect(0, 0, width, height);
+  const innerAudioContext = wx.createInnerAudioContext({});
   const audio3 = wx.createInnerAudioContext({});
-  creatAudio(
+  const audio4 = wx.createInnerAudioContext({});
+  const audio5 = wx.createInnerAudioContext({});
+  createAudio(
     audio3,
-    "https://7869-xia-7gu6sjctd0e9f7b4-1314673606.tcb.qcloud.la/audio/audio2.mp3",
+    baseUrl + data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)],
     true,
+    false,
     true
+  );
+  createAudio(
+    audio4,
+    "/audio/succ.mp3",
+    false,
+    false,
+    false
+  );
+  createAudio(
+    audio5,
+    '/audio/fail.mp3',
+    false,
+    false,
+    false
   );
   console.log("yes");
   var levelX,
@@ -30,8 +66,13 @@ export default function Main(ctx, images, needUpdate) {
     randomOrdinate,
     differenceX,
     differenceY,
-    imgWidth = parseInt(height / 3);
+    randomNum,
+    imgWidth = parseInt(height / 3.4);
   const randomIf = () => {
+
+    randomNum = true;
+    randomNum = Math.random() > 0.5;
+
     data.smallImgList = [];
     switch (data.count) {
       case 0:
@@ -72,35 +113,48 @@ export default function Main(ctx, images, needUpdate) {
         break;
     }
     // 整合为一个数组
-    levelX.forEach((item1) => {
-      levelY.forEach((item2) => {
-        data.smallImgList.push({ x: item2, y: item1 });
+    levelY.forEach((item1) => {
+      levelX.forEach((item2) => {
+        data.smallImgList.push({
+          x: randomNum ? item1 : item2,
+          y: randomNum ? item2 : item1,
+        });
       });
     });
     randomAbscissa = randomArr(data.smallImgList);
     randomOrdinate = randomArr(data.smallImgList);
   };
   randomIf();
+  loadNextImg()
 
   // 画背景图
-  renderImg(ctx, 1, 0, 0, 500, 960, 0, 0, width, height, images[0]);
+  // renderImg(ctx, 1, 0, 0, 500, 960, 0, 0, width, height, images[0]);
 
   // 初始化关卡
 
-  init(ctx, images, width, height, randomAbscissa, randomOrdinate);
+  init(ctx, images, width, height, randomAbscissa, randomOrdinate, goBackNum);
+
   // 是否有图片
   if (data.urlList.length === 0) {
     wx.showModal({
       title: "不好意思",
-      content:
-        "当你看到这个弹窗时说明我应该是没预算买服务导致图片挂了╮(๑•́ ₃•̀๑)╭",
+      content: "当你看到这个弹窗时说明我应该是没预算买服务了╮(๑•́ ₃•̀๑)╭",
       confirmText: "重玩",
       cancelText: "分享",
       success(res) {
         if (res.confirm) {
-          init(ctx, images, width, height, randomAbscissa, randomOrdinate);
+          resumeAudio(audio3);
+          init(
+            ctx,
+            images,
+            width,
+            height,
+            randomAbscissa,
+            randomOrdinate,
+            goBackNum
+          );
         } else if (res.cancel) {
-          autoShare(data.urlList[data.count + 1]);
+          autoShare(baseUrl + data.urlList[data.count + 1]);
         }
       },
     });
@@ -108,16 +162,231 @@ export default function Main(ctx, images, needUpdate) {
   // 点击画布
   wx.onTouchStart(function (e) {
     let p = getEventPosition(e.touches[0]);
-    console.log(123);
-    //点击重玩
-    // if (
-    //   width / 2 - 15 <= p.x &&
-    //   width / 2 + 20 >= p.x &&
-    //   height - 130 <= p.y &&
-    //   height - 90 >= p.y
-    // ) {
-    //   init(ctx, width, height, randomAbscissa, randomOrdinate);
-    // }
+    console.log("点了画布");
+    // 下方重玩按钮
+    if (
+      width / 2 - width / 10 <= p.x &&
+      p.x <= width / 5 + (width / 2 - width / 10) &&
+      height / 1.1 - width / 10 <= p.y &&
+      p.y <= width / 10 + (height / 1.1 - width / 10)
+    ) {
+      resumeAudio(audio3);
+      randomIf();
+      init(
+        ctx,
+        images,
+        width,
+        height,
+        randomAbscissa,
+        randomOrdinate,
+        goBackNum
+      );
+    }
+    // 下方分享按钮
+    if (
+      width / 2 - width / 10 + width / 3.5 <= p.x &&
+      p.x <= width / 5 + (width / 2 - width / 10 + width / 3.5) &&
+      height / 1.1 - width / 10 <= p.y &&
+      p.y <= width / 10 + (height / 1.1 - width / 10)
+    ) {
+      autoShare(baseUrl + data.urlList[data.count + 1]);
+    }
+
+    // 下方撤回按钮
+    if (
+      width / 2 - width / 10 - width / 3.5 <= p.x &&
+      p.x <= width / 5 + (width / 2 - width / 10 - width / 3.5) &&
+      height / 1.1 - width / 10 <= p.y &&
+      p.y <= width / 10 + (height / 1.1 - width / 10)
+    ) {
+      if (data.answerSeat.length > 0 && data.answer.length > 0) {
+        if (goBackNum > 0) {
+          goBackNum--;
+          wx.setStorage({
+            key: "gameData",
+            data: {
+              count: data.count,
+              goBackNum: goBackNum,
+              seeHd: data.seeHd,
+            },
+            success() {
+              console.log("存上了");
+            },
+          });
+          // 撤回次数
+          drawButton(
+            ctx,
+            {
+              x: width / 2 - width / 10 - width / 8,
+              y: height / 1.1 - width / 9,
+            },
+            width / 18,
+            width / 18,
+            width / 18 / 2,
+            "transparent",
+            "#fff",
+            goBackNum,
+            "#333",
+            width / 30
+          );
+          // 清除
+          ctx.clearRect(
+            levelX[randomNum ? data.numX : data.numY] / 2 +
+            (width / 2 - imgWidth / 2),
+            levelY[randomNum ? data.numY : data.numX] / 2 + height / 7,
+            newSize,
+            newSize
+          );
+          // 重绘上方原图
+          renderImg(
+            ctx,
+            0.3,
+            levelX[randomNum ? data.numX : data.numY],
+            levelY[randomNum ? data.numY : data.numX],
+            initSize,
+            initSize,
+            levelX[randomNum ? data.numX : data.numY] / 2 +
+            (width / 2 - imgWidth / 2),
+            levelY[randomNum ? data.numY : data.numX] / 2 + height / 7,
+            clearSize,
+            clearSize,
+            images[data.count + 1]
+          );
+
+          if (data.numY === 0 && data.numX > 0) {
+            data.numY = levelX.length - 1;
+            data.numX--;
+          } else {
+            data.numY--;
+          }
+
+          // 下方重绘小图
+          renderImg(
+            ctx,
+            1,
+            data.answer[data.answer.length - 1].x,
+            data.answer[data.answer.length - 1].y,
+            initSize,
+            initSize,
+            data.answerSeat[data.answerSeat.length - 1].x,
+            data.answerSeat[data.answerSeat.length - 1].y,
+            clearSize,
+            clearSize,
+            images[data.count + 1]
+          );
+          data.answerSeat.pop();
+          data.answer.pop();
+        } else {
+          if (data.seeHd > 0) {
+            wx.showModal({
+              title: "看广告",
+              content: "每天能看三次广告，悠着点用",
+              confirmText: "看完了",
+              showCancel: false,
+              success(res) {
+                if (res.confirm) {
+                  data.seeHd--;
+                  goBackNum++;
+                  wx.setStorage({
+                    key: "gameData",
+                    data: {
+                      count: data.count,
+                      goBackNum: goBackNum,
+                      seeHd: data.seeHd,
+                    },
+                    success() {
+                      console.log("存上了");
+                    },
+                  });
+                  // 撤回次数
+                  drawButton(
+                    ctx,
+                    {
+                      x: width / 2 - width / 10 - width / 8,
+                      y: height / 1.1 - width / 9,
+                    },
+                    width / 18,
+                    width / 18,
+                    width / 18 / 2,
+                    "transparent",
+                    "#fff",
+                    goBackNum,
+                    "#333",
+                    width / 30
+                  );
+                }
+              },
+            });
+          } else {
+            wx.setStorage({
+              key: "gameData",
+              data: {
+                count: data.count,
+                goBackNum: goBackNum,
+                seeHd: data.seeHd,
+              },
+              // data:0,
+              success() {
+                console.log("存上了");
+              },
+            });
+            wx.showModal({
+              title: "没机会了",
+              content: "给你机会你也不中用啊",
+              confirmText: "重玩",
+              cancelText: "分享",
+              success(res) {
+                if (res.confirm) {
+                  resumeAudio(audio3);
+                  renderImg(
+                    ctx,
+                    1,
+                    0,
+                    0,
+                    500,
+                    960,
+                    0,
+                    0,
+                    width,
+                    height,
+                    images[0]
+                  );
+                  randomIf();
+                  init(
+                    ctx,
+                    images,
+                    width,
+                    height,
+                    randomAbscissa,
+                    randomOrdinate,
+                    goBackNum
+                  );
+                } else if (res.cancel) {
+                  autoShare(baseUrl + data.urlList[data.count + 1]);
+                  if (goBackNum === 0 && data.shareGoBackNum) {
+                    data.shareGoBackNum = false;
+                    goBackNum++;
+                    wx.setStorage({
+                      key: "gameData",
+                      data: {
+                        count: data.count,
+                        goBackNum: goBackNum,
+                        seeHd: data.seeHd,
+                      },
+                      // data:0,
+                      success() {
+                        console.log("存上了");
+                      },
+                    });
+                  }
+                }
+              },
+            });
+          }
+        }
+      }
+    }
+
     randomOrdinate.forEach((item, index) => {
       //判断点击了哪个图片
       if (
@@ -133,10 +402,14 @@ export default function Main(ctx, images, needUpdate) {
           )
             return;
         }
-        const innerAudioContext = wx.createInnerAudioContext({});
         innerAudioContext.src = "/audio/click.mp3";
         innerAudioContext.play();
         data.answer.push(randomAbscissa[index]);
+        data.answerSeat.push({
+          x: item.x / 2 + (width / 2 - imgWidth / 2),
+          y: item.y / 2 + height / 2,
+        });
+        // console.log(data.answerSeat);
         if (data.count === 0) {
           if (data.numX === 2) return;
           data.numY === 1 && data.numX++;
@@ -169,21 +442,43 @@ export default function Main(ctx, images, needUpdate) {
           randomAbscissa[index].y,
           initSize,
           initSize,
-          levelX[data.numY] / 2 + (width / 2 - imgWidth / 2),
-          levelX[data.numX] / 2 + height / 7,
+          levelX[randomNum ? data.numX : data.numY] / 2 +
+          (width / 2 - imgWidth / 2),
+          levelY[randomNum ? data.numY : data.numX] / 2 + height / 7,
           newSize,
           newSize,
           images[data.count + 1]
         );
       }
     });
-    // 是否过关
+    // 是否全部点完
     if (data.answer.length === data.smallImgList.length) {
-      const isSuccess =
+      console.log('是否全部点完', audio3);
+      // audio3.pause();
+      pauseAudio(audio3);
+      // 是否通关
+      isSuccess =
         JSON.stringify(data.answer) === JSON.stringify(data.smallImgList)
           ? true
           : false;
+      if (isSuccess) {
 
+        wx.setStorage({
+          key: "gameData",
+          data: {
+            count: data.count + 1,
+            goBackNum: data.goBackNum,
+            seeHd: data.seeHd,
+          },
+          // data:0,
+          success() {
+            console.log("存上了", data.count + 1);
+          },
+        });
+        audio4.play()
+      } else {
+        audio5.play()
+      }
       wx.showModal({
         title: isSuccess ? "恭喜过关" : "失败",
         content: isSuccess
@@ -200,12 +495,25 @@ export default function Main(ctx, images, needUpdate) {
                 data.count = 0;
 
                 wx.showModal({
-                  title: "不好意思",
-                  content: "暂时没有下一关了呢～",
+                  title: "再次恭喜你",
+                  content: "已全部通关！！！",
                   confirmText: "重玩",
                   cancelText: "分享",
                   success(res) {
                     if (res.confirm) {
+                      wx.setStorage({
+                        key: "gameData",
+                        data: {
+                          count: 0,
+                          goBackNum: 1,
+                          seeHd: 3,
+                        },
+                        // data:0,
+                        success() {
+                          console.log("存上了");
+                        },
+                      });
+                      resumeAudio(audio3);
                       renderImg(
                         ctx,
                         1,
@@ -226,14 +534,17 @@ export default function Main(ctx, images, needUpdate) {
                         width,
                         height,
                         randomAbscissa,
-                        randomOrdinate
+                        randomOrdinate,
+                        goBackNum
                       );
                     } else if (res.cancel) {
-                      autoShare(data.urlList[data.count + 1]);
+                      autoShare(baseUrl + data.urlList[data.count + 1]);
                     }
                   },
                 });
               } else {
+                loadNextImg()
+                resumeAudio(audio3);
                 randomIf();
                 init(
                   ctx,
@@ -241,49 +552,77 @@ export default function Main(ctx, images, needUpdate) {
                   width,
                   height,
                   randomAbscissa,
-                  randomOrdinate
+                  randomOrdinate,
+                  goBackNum
                 );
               }
             } else {
+              resumeAudio(audio3);
               randomIf();
-              init(ctx, images, width, height, randomAbscissa, randomOrdinate);
+              init(
+                ctx,
+                images,
+                width,
+                height,
+                randomAbscissa,
+                randomOrdinate,
+                goBackNum
+              );
             }
           } else if (res.cancel) {
-            autoShare(data.urlList[data.count + 1]);
+            autoShare(baseUrl + data.urlList[data.count + 1]);
             isSuccess && data.count++;
-            renderImg(ctx, 1, 0, 0, 500, 960, 0, 0, width, height, images[0]);
           }
         },
       });
     }
   }, false);
+  
   // 后台返回时
   wx.onShow(() => {
     if (data.page === 1) {
-      audio3.play();
-      requestAnimationFrame(() => {
-        randomIf();
-        init(ctx, images, width, height, randomAbscissa, randomOrdinate);
-      });
+      setTimeout(() => {
+        resumeAudio(audio3);
+        requestAnimationFrame(() => {
+          randomIf();
+          init(
+            ctx,
+            images,
+            width,
+            height,
+            randomAbscissa,
+            randomOrdinate,
+            goBackNum
+          );
+        });
+      }, 0);
     }
   });
   // 进入后台时
   wx.onHide(() => {
     if (data.page === 1) {
       // 没成功是因为不是openid没权限。。。。服了
-      console.log(data.count);
-      needUpdate.update({
-        count: data.count, // 将该条数据的 key 指定设置为某个值，
-        success: function (res) {
-          console.log("更新成功：", res);
-        },
-        faile: function (e) {
-          console.error("更新失败：", e);
-        },
-        complete: function () {
-          console.log("进行过一次更新数据的操作");
-        },
-      });
+      // wx.setStorage({
+      //         key: 'count',
+      //         data: data.count,
+      //         // data: 0,
+      //         success() {
+      //           console.log('存上了',data.count);
+      //        }
+      //   })
+      // needUpdate.update({
+      //   count: data.count, // 将该条数据的 key 指定设置为某个值，
+      //   success: function (res) {
+      //     console.log("更新成功：", res);
+      //   },
+      //   faile: function (e) {
+      //     console.error("更新失败：", e);
+      //   },
+      //   complete: function () {
+      //     console.log("进行过一次更新数据的操作");
+      //   },
+      // });
     }
   });
+  //  }, 0);
 }
