@@ -6,6 +6,9 @@ import {
   createAudio,
   drawButton,
   pauseAudio,
+  playMusic,
+  pauseMusic,
+  resumeMusic,
   resumeAudio
 } from "./utils";
 import { baseUrl } from './const'
@@ -35,13 +38,15 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
   const audio3 = wx.createInnerAudioContext({});
   const audio4 = wx.createInnerAudioContext({});
   const audio5 = wx.createInnerAudioContext({});
-  createAudio(
-    audio3,
-    baseUrl + data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)],
-    true,
-    false,
-    true
-  );
+  // createAudio(
+  //   audio3,
+  //   // baseUrl + data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)],
+  //   data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)],
+  //   true,
+  //   false,
+  //   true
+  // );
+  playMusic()
   createAudio(
     audio4,
     "/audio/succ.mp3",
@@ -143,7 +148,8 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
       cancelText: "分享",
       success(res) {
         if (res.confirm) {
-          resumeAudio(audio3);
+          // resumeAudio(audio3);
+          resumeMusic()
           init(
             ctx,
             images,
@@ -170,7 +176,8 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
       height / 1.1 - width / 10 <= p.y &&
       p.y <= width / 10 + (height / 1.1 - width / 10)
     ) {
-      resumeAudio(audio3);
+      // resumeAudio(audio3);
+      resumeMusic()
       randomIf();
       init(
         ctx,
@@ -337,7 +344,8 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
               cancelText: "分享",
               success(res) {
                 if (res.confirm) {
-                  resumeAudio(audio3);
+                  // resumeAudio(audio3);
+                  resumeMusic()
                   renderImg(
                     ctx,
                     1,
@@ -455,7 +463,8 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
     if (data.answer.length === data.smallImgList.length) {
       console.log('是否全部点完', audio3);
       // audio3.pause();
-      pauseAudio(audio3);
+      pauseMusic()
+      // pauseAudio(audio3);
       // 是否通关
       isSuccess =
         JSON.stringify(data.answer) === JSON.stringify(data.smallImgList)
@@ -513,7 +522,8 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
                           console.log("存上了");
                         },
                       });
-                      resumeAudio(audio3);
+                      // resumeAudio(audio3);
+                      resumeMusic()
                       renderImg(
                         ctx,
                         1,
@@ -544,7 +554,8 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
                 });
               } else {
                 loadNextImg()
-                resumeAudio(audio3);
+                // resumeAudio(audio3);
+                resumeMusic()
                 randomIf();
                 init(
                   ctx,
@@ -557,7 +568,8 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
                 );
               }
             } else {
-              resumeAudio(audio3);
+              // resumeAudio(audio3);
+              resumeMusic()
               randomIf();
               init(
                 ctx,
@@ -582,7 +594,8 @@ export default function Main(ctx, images, count, goBackNum, seeHd) {
   wx.onShow(() => {
     if (data.page === 1) {
       setTimeout(() => {
-        resumeAudio(audio3);
+        // resumeAudio(audio3);
+        resumeMusic()
         requestAnimationFrame(() => {
           randomIf();
           init(

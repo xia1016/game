@@ -49,47 +49,35 @@ export const renderImg = (
   }
 };
 
-let onEndedCallback;
+// 创建音频上下文
+let audioContext = wx.createInnerAudioContext();
+// 播放音乐的函数
+export function playMusic() {
+  const src = baseUrl + data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)]
+  audioContext.src = src;
+  audioContext.play();
+}
+
+// 设置音频播放结束时的回调函数
+audioContext.onEnded(() => {
+  // 当前音乐播放结束后，自动播放下一首
+  playMusic();
+});
+
+// 暂停音乐的函数
+export function pauseMusic() {
+  audioContext.pause();
+}
+
+// 继续播放音乐的函数
+export function resumeMusic() {
+  audioContext.play();
+}
+
 export function createAudio(innerAudioContext, src, autoplay, loop,isNeedNext) {
   innerAudioContext.src = src;
   innerAudioContext.autoplay = autoplay;
   innerAudioContext.loop = loop;
-
-   // 定义 onEnded 事件处理函数
-  onEndedCallback = () => {
-    if (isNeedNext) {
-      playNextSong();
-    }
-  };
-
-  // 根据 isNeedNext 决定是否添加 onEnded 事件监听器
-  if (isNeedNext) {
-    innerAudioContext.onEnded(onEndedCallback);
-  }
-}
-
-// 播放下一首音乐
-export function playNextSong() {
-  // 创建新的音频上下文并播放下一首
-  const nextSongAudioContext = wx.createInnerAudioContext();
-  createAudio(nextSongAudioContext,baseUrl + data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)], true, false,true);
-}
-
-// 暂停
-export function pauseAudio(innerAudioContext) {
-  innerAudioContext.pause();
-  // 暂停时不需要移除 onEnded 监听器，因为我们希望重新开始后还能触发
-  innerAudioContext.offEnded(() => {});
-}
-
-// 重新开始
-export function resumeAudio(innerAudioContext) {
-  innerAudioContext.play(); // 如果没有设置 src，直接播放
-   // 定义 onEnded 事件处理函数
-   onEndedCallback = () => {
-      playNextSong();
-  };
-  innerAudioContext.onEnded(onEndedCallback);
 }
 
 // 打乱数组元素顺序
