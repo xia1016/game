@@ -37,10 +37,14 @@
     "showES6CompileOption": false,
     "useCompilerPlugins": false,
     "ignoreUploadUnusedFiles": true,
-    "condition": false
+    "condition": false,
+    "compileWorklet": false,
+    "minifyWXML": true,
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "game",
-  "libVersion": "2.30.2",
+  "libVersion": "3.16.1",
   "appid": "wx0add7bcf02e3bb93",
   "projectname": "game",
   "packOptions": {

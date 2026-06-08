@@ -1,641 +1,433 @@
+import data from './data';
 import {
-  renderImg,
-  getEventPosition,
-  randomArr,
-  autoShare,
-  createAudio,
-  drawButton,
-  pauseAudio,
-  playMusic,
-  pauseMusic,
-  resumeMusic,
-  resumeAudio
-} from "./utils";
-import { baseUrl } from './const'
-import { init } from "./init";
-import data from "./data";
-export default function Main(ctx, images, count, goBackNum, seeHd) {
-  const loadNextImg = () => {
-    var image = wx.createImage();
-    console.log('=== data.count: ', data.urlList.length,data.count)
-    image.src = baseUrl + data.urlList[data.urlList.length - 1 === data.count ? 1 : data.count + 1]
-    !(data.urlList.length - 1 === data.count) && images.push(image)
-    for (let i = 0; i < images.length - 1; i++) {
-      const element = images[i].src;
-      console.log('src----------', element,);
-    }
-  } 
+  playMusic, pauseMusic, resumeMusic,
+  playBgm, stopBgm, pauseBgm, resumeBgm,
+  createAudio, getEventPosition, autoShare,
+  updateAndDrawParticles, spawnParticles,
+  updateAndDrawComboPopups, spawnComboPopup,
+  THEME,
+} from './utils';
+import {
+  initLevel,
+  generateQuestion,
+  drawGame,
+  drawHomeScreen,
+  drawResultScreen,
+  hitTestCandidate,
+  hitTestStartBtn,
+  hitTestResultBtn,
+  drawGameMenu,
+  hitTestGameMenu,
+} from './init';
+import { baseUrl } from './const';
 
-  let isSuccess = false;
-  data.count = count;
-  data.seeHd = seeHd;
-  data.page = 1;
-  var width = wx.getSystemInfoSync().windowWidth;
-  var height = wx.getSystemInfoSync().windowHeight;
-  console.log(width, height);
-  ctx.clearRect(0, 0, width, height);
-  const innerAudioContext = wx.createInnerAudioContext({});
-  const audio3 = wx.createInnerAudioContext({});
-  const audio4 = wx.createInnerAudioContext({});
-  const audio5 = wx.createInnerAudioContext({});
-  // createAudio(
-  //   audio3,
-  //   // baseUrl + data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)],
-  //   data.bgMusic[Math.floor(Math.random() * data.bgMusic.length)],
-  //   true,
-  //   false,
-  //   true
-  // );
-  playMusic()
-  createAudio(
-    audio4,
-    "/audio/succ.mp3",
-    false,
-    false,
-    false
-  );
-  createAudio(
-    audio5,
-    '/audio/fail.mp3',
-    false,
-    false,
-    false
-  );
-  console.log("yes");
-  var levelX,
-    levelY,
-    clearSize,
-    initSize,
-    newSize,
-    randomAbscissa,
-    randomOrdinate,
-    differenceX,
-    differenceY,
-    randomNum,
-    imgWidth = parseInt(height / 3.4);
-  const randomIf = () => {
+const STATE = { HOME: 'home', PLAYING: 'playing', RESULT: 'result' };
 
-    randomNum = true;
-    randomNum = Math.random() > 0.5;
+// 飞行动画速度（每帧推进量）
+const FLY_SPEED = 0.07;
+// 答错后揭示正确答案的时长（ms）
+const REVEAL_DURATION = 800;
+// 答对后进入下一题的延迟（ms，等飞行动画）
+const NEXT_QUESTION_DELAY = 550;
+// 碎片抖动总时长（ms）
+const SHAKE_DURATION = 400;
 
-    data.smallImgList = [];
-    switch (data.count) {
-      case 0:
-        levelX = data.firstX;
-        levelY = data.firstY;
-        clearSize = imgWidth / 2;
-        initSize = imgWidth;
-        newSize = imgWidth / 2;
-        differenceX = 0;
-        differenceY = imgWidth / 2;
-        break;
-      case 1:
-        levelX = data.secondX;
-        levelY = data.secondY;
-        clearSize = imgWidth / 3;
-        initSize = imgWidth / 1.5;
-        newSize = imgWidth / 3;
-        differenceX = imgWidth / 6;
-        differenceY = imgWidth / 3;
-        break;
-      case 2:
-        levelX = data.thirdX;
-        levelY = data.thirdY;
-        clearSize = imgWidth / 4;
-        initSize = imgWidth / 2;
-        newSize = imgWidth / 4;
-        differenceX = imgWidth / 4;
-        differenceY = imgWidth / 4;
-        break;
-      default:
-        levelX = data.abscissa;
-        levelY = data.ordinate;
-        clearSize = imgWidth / 5;
-        initSize = imgWidth / 2.5;
-        newSize = imgWidth / 5;
-        differenceX = imgWidth / 3;
-        differenceY = imgWidth / 5;
-        break;
-    }
-    // 整合为一个数组
-    levelY.forEach((item1) => {
-      levelX.forEach((item2) => {
-        data.smallImgList.push({
-          x: randomNum ? item1 : item2,
-          y: randomNum ? item2 : item1,
-        });
-      });
-    });
-    randomAbscissa = randomArr(data.smallImgList);
-    randomOrdinate = randomArr(data.smallImgList);
-  };
-  randomIf();
-  loadNextImg()
+export default function Main(ctx, images, savedLevel) {
+  const w = data.screenW;
+  const h = data.screenH;
 
-  // 画背景图
-  // renderImg(ctx, 1, 0, 0, 500, 960, 0, 0, width, height, images[0]);
+  data.level = savedLevel || 0;
+  data.page  = 1;
 
-  // 初始化关卡
+  // ── 广告管理 ──────────────────────────────────────────
+  // Banner 广告：首页底部 / 结算页卡片下方
+  // adUnitId 替换为实际申请的广告单元 ID
+  let bannerAd = null;
+  const AD_UNIT_ID = 'adunit-xxxxxxxxxxxxxxxx'; // TODO: 替换为真实广告单元 ID
+  const AD_H = 100; // Banner 广告高度（逻辑像素），与 data.adBannerH 保持一致
 
-  init(ctx, images, width, height, randomAbscissa, randomOrdinate, goBackNum);
-
-  // 是否有图片
-  if (data.urlList.length === 0) {
-    wx.showModal({
-      title: "不好意思",
-      content: "当你看到这个弹窗时说明我应该是没预算买服务了╮(๑•́ ₃•̀๑)╭",
-      confirmText: "重玩",
-      cancelText: "分享",
-      success(res) {
-        if (res.confirm) {
-          // resumeAudio(audio3);
-          resumeMusic()
-          init(
-            ctx,
-            images,
-            width,
-            height,
-            randomAbscissa,
-            randomOrdinate,
-            goBackNum
-          );
-        } else if (res.cancel) {
-          autoShare(baseUrl + data.urlList[data.count + 1]);
-        }
-      },
-    });
-  }
-  // 点击画布
-  wx.onTouchStart(function (e) {
-    let p = getEventPosition(e.touches[0]);
-    console.log("点了画布");
-    // 下方重玩按钮
-    if (
-      width / 2 - width / 10 <= p.x &&
-      p.x <= width / 5 + (width / 2 - width / 10) &&
-      height / 1.1 - width / 10 <= p.y &&
-      p.y <= width / 10 + (height / 1.1 - width / 10)
-    ) {
-      // resumeAudio(audio3);
-      resumeMusic()
-      randomIf();
-      init(
-        ctx,
-        images,
-        width,
-        height,
-        randomAbscissa,
-        randomOrdinate,
-        goBackNum
-      );
-    }
-    // 下方分享按钮
-    if (
-      width / 2 - width / 10 + width / 3.5 <= p.x &&
-      p.x <= width / 5 + (width / 2 - width / 10 + width / 3.5) &&
-      height / 1.1 - width / 10 <= p.y &&
-      p.y <= width / 10 + (height / 1.1 - width / 10)
-    ) {
-      autoShare(baseUrl + data.urlList[data.count + 1]);
-    }
-
-    // 下方撤回按钮
-    if (
-      width / 2 - width / 10 - width / 3.5 <= p.x &&
-      p.x <= width / 5 + (width / 2 - width / 10 - width / 3.5) &&
-      height / 1.1 - width / 10 <= p.y &&
-      p.y <= width / 10 + (height / 1.1 - width / 10)
-    ) {
-      if (data.answerSeat.length > 0 && data.answer.length > 0) {
-        if (goBackNum > 0) {
-          goBackNum--;
-          wx.setStorage({
-            key: "gameData",
-            data: {
-              count: data.count,
-              goBackNum: goBackNum,
-              seeHd: data.seeHd,
-            },
-            success() {
-              console.log("存上了");
-            },
-          });
-          // 撤回次数
-          drawButton(
-            ctx,
-            {
-              x: width / 2 - width / 10 - width / 8,
-              y: height / 1.1 - width / 9,
-            },
-            width / 18,
-            width / 18,
-            width / 18 / 2,
-            "transparent",
-            "#fff",
-            goBackNum,
-            "#333",
-            width / 30
-          );
-          // 清除
-          ctx.clearRect(
-            levelX[randomNum ? data.numX : data.numY] / 2 +
-            (width / 2 - imgWidth / 2),
-            levelY[randomNum ? data.numY : data.numX] / 2 + height / 7,
-            newSize,
-            newSize
-          );
-          // 重绘上方原图
-          renderImg(
-            ctx,
-            0.3,
-            levelX[randomNum ? data.numX : data.numY],
-            levelY[randomNum ? data.numY : data.numX],
-            initSize,
-            initSize,
-            levelX[randomNum ? data.numX : data.numY] / 2 +
-            (width / 2 - imgWidth / 2),
-            levelY[randomNum ? data.numY : data.numX] / 2 + height / 7,
-            clearSize,
-            clearSize,
-            images[data.count + 1]
-          );
-
-          if (data.numY === 0 && data.numX > 0) {
-            data.numY = levelX.length - 1;
-            data.numX--;
-          } else {
-            data.numY--;
-          }
-
-          // 下方重绘小图
-          renderImg(
-            ctx,
-            1,
-            data.answer[data.answer.length - 1].x,
-            data.answer[data.answer.length - 1].y,
-            initSize,
-            initSize,
-            data.answerSeat[data.answerSeat.length - 1].x,
-            data.answerSeat[data.answerSeat.length - 1].y,
-            clearSize,
-            clearSize,
-            images[data.count + 1]
-          );
-          data.answerSeat.pop();
-          data.answer.pop();
-        } else {
-          if (data.seeHd > 0) {
-            wx.showModal({
-              title: "看广告",
-              content: "每天能看三次广告，悠着点用",
-              confirmText: "看完了",
-              showCancel: false,
-              success(res) {
-                if (res.confirm) {
-                  data.seeHd--;
-                  goBackNum++;
-                  wx.setStorage({
-                    key: "gameData",
-                    data: {
-                      count: data.count,
-                      goBackNum: goBackNum,
-                      seeHd: data.seeHd,
-                    },
-                    success() {
-                      console.log("存上了");
-                    },
-                  });
-                  // 撤回次数
-                  drawButton(
-                    ctx,
-                    {
-                      x: width / 2 - width / 10 - width / 8,
-                      y: height / 1.1 - width / 9,
-                    },
-                    width / 18,
-                    width / 18,
-                    width / 18 / 2,
-                    "transparent",
-                    "#fff",
-                    goBackNum,
-                    "#333",
-                    width / 30
-                  );
-                }
-              },
-            });
-          } else {
-            wx.setStorage({
-              key: "gameData",
-              data: {
-                count: data.count,
-                goBackNum: goBackNum,
-                seeHd: data.seeHd,
-              },
-              // data:0,
-              success() {
-                console.log("存上了");
-              },
-            });
-            wx.showModal({
-              title: "没机会了",
-              content: "给你机会你也不中用啊",
-              confirmText: "重玩",
-              cancelText: "分享",
-              success(res) {
-                if (res.confirm) {
-                  // resumeAudio(audio3);
-                  resumeMusic()
-                  renderImg(
-                    ctx,
-                    1,
-                    0,
-                    0,
-                    500,
-                    960,
-                    0,
-                    0,
-                    width,
-                    height,
-                    images[0]
-                  );
-                  randomIf();
-                  init(
-                    ctx,
-                    images,
-                    width,
-                    height,
-                    randomAbscissa,
-                    randomOrdinate,
-                    goBackNum
-                  );
-                } else if (res.cancel) {
-                  autoShare(baseUrl + data.urlList[data.count + 1]);
-                  if (goBackNum === 0 && data.shareGoBackNum) {
-                    data.shareGoBackNum = false;
-                    goBackNum++;
-                    wx.setStorage({
-                      key: "gameData",
-                      data: {
-                        count: data.count,
-                        goBackNum: goBackNum,
-                        seeHd: data.seeHd,
-                      },
-                      // data:0,
-                      success() {
-                        console.log("存上了");
-                      },
-                    });
-                  }
-                }
-              },
-            });
-          }
-        }
-      }
-    }
-
-    randomOrdinate.forEach((item, index) => {
-      //判断点击了哪个图片
-      if (
-        item.x / 2 + (width / 2 - imgWidth / 2) <= p.x &&
-        item.x / 2 + width / 2 - differenceX >= p.x &&
-        item.y / 2 + height / 2 <= p.y &&
-        item.y / 2 + height / 2 + differenceY >= p.y
-      ) {
-        for (let i = 0; i < data.answer.length; i++) {
-          if (
-            data.answer[i].x === randomAbscissa[index].x &&
-            data.answer[i].y === randomAbscissa[index].y
-          )
-            return;
-        }
-        innerAudioContext.src = "/audio/click.mp3";
-        innerAudioContext.play();
-        data.answer.push(randomAbscissa[index]);
-        data.answerSeat.push({
-          x: item.x / 2 + (width / 2 - imgWidth / 2),
-          y: item.y / 2 + height / 2,
-        });
-        // console.log(data.answerSeat);
-        if (data.count === 0) {
-          if (data.numX === 2) return;
-          data.numY === 1 && data.numX++;
-          data.numY === 1 ? (data.numY = 0) : data.numY++;
-        } else if (data.count === 1) {
-          if (data.numX === 3) return;
-          data.numY === 2 && data.numX++;
-          data.numY === 2 ? (data.numY = 0) : data.numY++;
-        } else if (data.count === 2) {
-          if (data.numX === 4) return;
-          data.numY === 3 && data.numX++;
-          data.numY === 3 ? (data.numY = 0) : data.numY++;
-        } else {
-          if (data.numX === 5) return;
-          data.numY === 4 && data.numX++;
-          data.numY === 4 ? (data.numY = 0) : data.numY++;
-        }
-        // 清除
-        ctx.clearRect(
-          item.x / 2 + (width / 2 - imgWidth / 2),
-          item.y / 2 + height / 2,
-          clearSize,
-          clearSize
-        );
-        // 在大图上重绘小图
-        renderImg(
-          ctx,
-          1,
-          randomAbscissa[index].x,
-          randomAbscissa[index].y,
-          initSize,
-          initSize,
-          levelX[randomNum ? data.numX : data.numY] / 2 +
-          (width / 2 - imgWidth / 2),
-          levelY[randomNum ? data.numY : data.numX] / 2 + height / 7,
-          newSize,
-          newSize,
-          images[data.count + 1]
-        );
-      }
-    });
-    // 是否全部点完
-    if (data.answer.length === data.smallImgList.length) {
-      console.log('是否全部点完', audio3);
-      // audio3.pause();
-      pauseMusic()
-      // pauseAudio(audio3);
-      // 是否通关
-      isSuccess =
-        JSON.stringify(data.answer) === JSON.stringify(data.smallImgList)
-          ? true
-          : false;
-      if (isSuccess) {
-
-        wx.setStorage({
-          key: "gameData",
-          data: {
-            count: data.count + 1,
-            goBackNum: data.goBackNum,
-            seeHd: data.seeHd,
-          },
-          // data:0,
-          success() {
-            console.log("存上了", data.count + 1);
-          },
-        });
-        audio4.play()
-      } else {
-        audio5.play()
-      }
-      wx.showModal({
-        title: isSuccess ? "恭喜过关" : "失败",
-        content: isSuccess
-          ? "哎呀我去，厉害呀！大神带带我～╭(⊙o⊙)╮"
-          : "再整一下子，你肯定行！干巴爹！ (๑•̀ㅂ•́)و✧",
-        confirmText: isSuccess ? "下一关" : "重玩",
-        cancelText: "分享",
-        success(res) {
-          if (res.confirm) {
-            if (isSuccess) {
-              data.count++;
-              renderImg(ctx, 1, 0, 0, 500, 960, 0, 0, width, height, images[0]);
-              if (data.count >= data.urlList.length - 1) {
-                data.count = 0;
-
-                wx.showModal({
-                  title: "再次恭喜你",
-                  content: "已全部通关！！！",
-                  confirmText: "重玩",
-                  cancelText: "分享",
-                  success(res) {
-                    if (res.confirm) {
-                      wx.setStorage({
-                        key: "gameData",
-                        data: {
-                          count: 0,
-                          goBackNum: 1,
-                          seeHd: 3,
-                        },
-                        // data:0,
-                        success() {
-                          console.log("存上了");
-                        },
-                      });
-                      // resumeAudio(audio3);
-                      resumeMusic()
-                      renderImg(
-                        ctx,
-                        1,
-                        0,
-                        0,
-                        500,
-                        960,
-                        0,
-                        0,
-                        width,
-                        height,
-                        images[0]
-                      );
-                      randomIf();
-                      init(
-                        ctx,
-                        images,
-                        width,
-                        height,
-                        randomAbscissa,
-                        randomOrdinate,
-                        goBackNum
-                      );
-                    } else if (res.cancel) {
-                      autoShare(baseUrl + data.urlList[data.count + 1]);
-                    }
-                  },
-                });
-              } else {
-                loadNextImg()
-                // resumeAudio(audio3);
-                resumeMusic()
-                randomIf();
-                init(
-                  ctx,
-                  images,
-                  width,
-                  height,
-                  randomAbscissa,
-                  randomOrdinate,
-                  goBackNum
-                );
-              }
-            } else {
-              // resumeAudio(audio3);
-              resumeMusic()
-              randomIf();
-              init(
-                ctx,
-                images,
-                width,
-                height,
-                randomAbscissa,
-                randomOrdinate,
-                goBackNum
-              );
-            }
-          } else if (res.cancel) {
-            autoShare(baseUrl + data.urlList[data.count + 1]);
-            isSuccess && data.count++;
-          }
+  function _createBannerAd() {
+    if (typeof wx.createBannerAd !== 'function') return;
+    try {
+      bannerAd = wx.createBannerAd({
+        adUnitId: AD_UNIT_ID,
+        style: {
+          left:   0,
+          top:    h - AD_H - (data.safeBottom || 0),
+          width:  w,
+          height: AD_H,
         },
       });
+      bannerAd.onResize(res => {
+        // 广告实际高度可能与请求不同，同步更新
+        data.adBannerH = res.height || AD_H;
+        bannerAd.style.top  = h - data.adBannerH - (data.safeBottom || 0);
+        bannerAd.style.left = (w - res.width) / 2;
+      });
+      bannerAd.onError(() => {
+        data.adBannerH = 0; // 广告加载失败，不占位
+      });
+    } catch (e) {
+      data.adBannerH = 0;
     }
+  }
+
+  function _showBannerAd() {
+    if (bannerAd) bannerAd.show().catch(() => {});
+  }
+
+  function _hideBannerAd() {
+    if (bannerAd) bannerAd.hide().catch(() => {});
+  }
+
+  // 不预设广告高度，等广告 onResize 回调后再更新
+  // 这样按钮初始位置稳定，不会因广告加载失败而跳动
+  // data.adBannerH 初始值为 0（见 data.js），广告成功后由 onResize 写入
+  _createBannerAd();
+
+  // ── 音效 ──────────────────────────────────────────────
+  const sfxClick = wx.createInnerAudioContext();
+  const sfxWin   = wx.createInnerAudioContext();
+  createAudio(sfxClick, '/audio/click.mp3', false, false);
+  createAudio(sfxWin,   '/audio/succ.mp3',  false, false);
+
+  // ── 状态 ──────────────────────────────────────────────
+  let gameState         = STATE.HOME;
+  let particles         = [];
+  let lastTick          = 0;
+  let nextQuestionTimer = 0;
+  let waitingNext       = false;
+  let resultAnim        = 0;   // 结果页星星动画进度 0→1
+  let btnPressAnim      = 0;   // 开始按钮按下动画进度 0→1（0=未触发）
+  let btnPressDuration  = 480; // 动画总时长 ms
+  // 结果页按钮动画：{ action, cx, cy, progress }，action=null 表示未触发
+  let resultBtnAnim     = { action: null, cx: 0, cy: 0, progress: 0 };
+  const RESULT_BTN_DUR  = 380; // 结果页按钮动画时长 ms
+  // 游戏内菜单是否打开
+  let showGameMenu      = false;
+
+  // ── 主循环 ────────────────────────────────────────────
+  function gameLoop(timestamp) {
+    requestAnimationFrame(gameLoop);
+
+    const dt = lastTick ? Math.min(timestamp - lastTick, 50) : 16;
+    lastTick = timestamp;
+
+    ctx.clearRect(0, 0, w, h);
+
+    if (gameState === STATE.HOME) {
+      // 推进按钮按下动画
+      if (btnPressAnim > 0 && btnPressAnim < 1) {
+        btnPressAnim = Math.min(1, btnPressAnim + dt / btnPressDuration);
+        if (btnPressAnim >= 1) {
+          // 动画播完，正式进入游戏
+          _startGame();
+          return;
+        }
+      }
+      drawHomeScreen(ctx, images, w, h, btnPressAnim);
+      return;
+    }
+
+    if (gameState === STATE.RESULT) {
+      drawGame(ctx, images);
+      updateAndDrawParticles(ctx, particles);
+      resultAnim = Math.min(1, resultAnim + dt / 800);
+
+      // 推进结果页按钮动画
+      if (resultBtnAnim.action) {
+        resultBtnAnim.progress = Math.min(1, resultBtnAnim.progress + dt / RESULT_BTN_DUR);
+        if (resultBtnAnim.progress >= 1) {
+          // 动画结束，执行对应操作
+          const act = resultBtnAnim.action;
+          resultBtnAnim = { action: null, cx: 0, cy: 0, progress: 0 };
+          if (act === 'next') {
+            data.level = (data.level + 1) % (data.urlList.length - 1);
+            _startGame();
+          } else if (act === 'retry') {
+            _startGame(true); // 重玩换图
+          } else if (act === 'share') {
+            // 分享当前正在玩的关卡图
+            const imgIdx = (data.levelOrder && data.levelOrder.length > data.level)
+              ? data.levelOrder[data.level]
+              : data.level + 1;
+            autoShare(baseUrl + (data.urlList[imgIdx] || data.urlList[1]));
+          }
+          return;
+        }
+      }
+
+      drawResultScreen(ctx, w, h, data.stars, resultAnim, resultBtnAnim);
+      return;
+    }
+
+    // ── PLAYING ──────────────────────────────────────────
+
+    // 1. 抖动计时器 + 旋转推进
+    _tickShake(dt);
+    _tickRotation();
+
+    // 2. 飞行动画
+    _updateFlying();
+
+    // 3. 等待下一题
+    if (waitingNext) {
+      nextQuestionTimer -= dt;
+      if (nextQuestionTimer <= 0) {
+        waitingNext = false;
+        _nextQuestion();
+      }
+    }
+
+    // 4. 绘制
+    drawGame(ctx, images);
+    updateAndDrawParticles(ctx, particles);
+    updateAndDrawComboPopups(ctx, data.comboPopups);
+    if (showGameMenu) drawGameMenu(ctx, w, h);
+  }
+
+  // ── 抖动计时器推进 ────────────────────────────────────
+  function _tickShake(dt) {
+    const q = data.currentQuestion;
+    if (!q) return;
+    q.candidates.forEach(c => {
+      if (c.shakeTimer > 0) c.shakeTimer = Math.max(0, c.shakeTimer - dt);
+    });
+  }
+
+  // ── 旋转角度推进（干扰项缓慢旋转）────────────────────
+  function _tickRotation() {
+    const q = data.currentQuestion;
+    if (!q) return;
+    q.candidates.forEach(c => {
+      if (c.rotSpeed && c.state === 'idle') {
+        c.rotation = (c.rotation + c.rotSpeed) % (Math.PI * 2);
+      }
+    });
+  }
+
+  // ── 飞行动画推进 ──────────────────────────────────────
+  function _updateFlying() {
+    const q = data.currentQuestion;
+    if (!q) return;
+
+    q.candidates.forEach(c => {
+      if (c.state !== 'flying') return;
+      c.flyProgress += FLY_SPEED;
+      if (c.flyProgress >= 1) {
+        c.flyProgress = 1;
+        c.state = 'placed';
+        data.placedPieces[c.row][c.col] = true;
+
+        // 彩色粒子爆炸
+        const cellW = data.targetW / data.pieceCols;
+        const cellH = data.targetH / data.pieceRows;
+        const tx = data.targetX + c.col * cellW + cellW / 2;
+        const ty = data.targetY + c.row * cellH + cellH / 2;
+        const comboColors = [THEME.gold, THEME.accent, THEME.accentAlt, THEME.correct];
+        const color = comboColors[Math.min(data.combo - 1, comboColors.length - 1)] || THEME.gold;
+        spawnParticles(particles, tx, ty, color);
+      }
+    });
+  }
+
+  // ── 玩家点击候选碎片 ──────────────────────────────────
+  function _onTapCandidate(idx) {
+    const q = data.currentQuestion;
+    if (!q || q.answered || waitingNext) return;
+
+    sfxClick.play();
+    const c = q.candidates[idx];
+
+    if (c.isCorrect) {
+      // ── 答对 ──────────────────────────────────────────
+      c.state = 'flying';
+      c.flyProgress = 0;
+      c.flyStartX = c.x;
+      c.flyStartY = c.y;
+      q.answered = true;
+      data.correctCount++;
+      data.answeredCount++;
+
+      // 连击
+      data.combo++;
+      if (data.combo > data.maxCombo) data.maxCombo = data.combo;
+
+      // 连击爆字（在碎片位置弹出）
+      spawnComboPopup(data.comboPopups, c.x, c.y - c.size * 0.7, data.combo);
+
+      waitingNext = true;
+      nextQuestionTimer = NEXT_QUESTION_DELAY;
+
+    } else {
+      // ── 答错 ──────────────────────────────────────────
+      c.state = 'wrong';
+      c.shakeTimer = SHAKE_DURATION;
+      q.answered = true;
+      data.answeredCount++;
+      data.wrongCount++;
+      data.combo = 0;  // 断连击
+
+      // 记录错误痕迹：把错选的碎片坐标存到目标格子
+      if (data.wrongPieces[q.targetRow]) {
+        data.wrongPieces[q.targetRow][q.targetCol] = { row: c.row, col: c.col };
+      }
+
+      // 高亮正确答案
+      q.candidates.forEach(cd => {
+        if (cd.isCorrect) cd.state = 'reveal';
+      });
+
+      waitingNext = true;
+      nextQuestionTimer = REVEAL_DURATION;
+    }
+  }
+
+  // ── 进入下一题 ────────────────────────────────────────
+  function _nextQuestion() {
+    if (data.answeredCount >= data.totalQuestions) {
+      _endGame();
+      return;
+    }
+    generateQuestion(data.answeredCount);
+  }
+
+  // ── 结束游戏 ──────────────────────────────────────────
+  function _endGame() {
+    if (gameState !== STATE.PLAYING) return;
+
+    data.stars = data.calcStars(data.wrongCount);
+    gameState  = STATE.RESULT;
+    resultAnim = 0;
+    pauseMusic();
+    sfxWin.play();
+    _showBannerAd(); // 结算页重新显示广告
+
+    // 存档（记录最高星级）
+    wx.getStorage({
+      key: 'findPieceData',
+      success(res) {
+        const saved = res.data || {};
+        const key = `stars_${data.level}`;
+        const bestStars = Math.max(saved[key] || 0, data.stars);
+        saved[key] = bestStars;
+        saved.level = Math.max(saved.level || 0, data.level + 1);
+        wx.setStorage({ key: 'findPieceData', data: saved, success() {} });
+      },
+      fail() {
+        const saved = { level: data.level + 1 };
+        saved[`stars_${data.level}`] = data.stars;
+        wx.setStorage({ key: 'findPieceData', data: saved, success() {} });
+      },
+    });
+
+    // 3星时全屏粒子庆祝
+    if (data.stars >= 3) {
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          spawnParticles(particles, w * (0.2 + Math.random() * 0.6), h * 0.4, null);
+        }, i * 120);
+      }
+    }
+  }
+
+  // ── 触摸事件 ──────────────────────────────────────────
+  wx.onTouchStart(function (e) {
+    const p = getEventPosition(e.touches[0]);
+
+    if (gameState === STATE.HOME) {
+      if (btnPressAnim === 0 && hitTestStartBtn(p.x, p.y, w, h)) {
+        sfxClick.play();
+        btnPressAnim = 0.001; // 触发动画（>0 即开始推进）
+      }
+      return;
+    }
+
+    if (gameState === STATE.RESULT) {
+      if (resultBtnAnim.action) return; // 动画进行中，忽略重复点击
+      const hit = hitTestResultBtn(p.x, p.y, w, h);
+      if (hit) {
+        sfxClick.play();
+        resultBtnAnim = { action: hit.action, cx: hit.cx, cy: hit.cy, progress: 0.001 };
+      }
+      return;
+    }
+
+    if (gameState !== STATE.PLAYING) return;
+
+    // 菜单按钮 / 菜单浮层点击
+    const menuHit = hitTestGameMenu(p.x, p.y, w, h, showGameMenu);
+    if (menuHit === 'menuBtn') {
+      sfxClick.play();
+      showGameMenu = !showGameMenu;
+      return;
+    }
+    if (showGameMenu) {
+      if (menuHit === 'resume') {
+        sfxClick.play();
+        showGameMenu = false;
+      } else if (menuHit === 'retry') {
+        sfxClick.play();
+        showGameMenu = false;
+        _startGame(true); // 重玩换图
+      } else if (menuHit === 'home') {
+        sfxClick.play();
+        showGameMenu = false;
+        gameState = STATE.HOME;
+        stopBgm();
+        pauseMusic();
+        playBgm();
+        _showBannerAd();
+      }
+      return;
+    }
+
+    const idx = hitTestCandidate(p.x, p.y);
+    if (idx !== -1) _onTapCandidate(idx);
   }, false);
-  
-  // 后台返回时
+
+  // ── 后台切换 ──────────────────────────────────────────
+  // ── 启动 ──────────────────────────────────────────────
+  // reroll=true 时给当前关卡换一张不同的图，防止多次拍照拼接作弊
+  function _startGame(reroll) {
+    if (reroll && data.levelOrder && data.levelOrder.length > 1) {
+      const imgCount = data.urlList.length - 1; // 关卡图数量
+      const curImg = data.levelOrder[data.level];
+      // 从全部图片里随机取一张不同的
+      let newImg;
+      let tries = 0;
+      do {
+        newImg = 1 + Math.floor(Math.random() * imgCount);
+        tries++;
+      } while (newImg === curImg && tries < 20);
+      data.levelOrder[data.level] = newImg;
+    }
+    initLevel(images);
+    generateQuestion(0);
+    gameState = STATE.PLAYING;
+    lastTick = 0;
+    waitingNext = false;
+    nextQuestionTimer = 0;
+    particles = [];
+    btnPressAnim = 0;
+    _hideBannerAd(); // 游戏中隐藏广告，避免遮挡操作区
+    stopBgm();        // 进入游戏，停止首页背景音乐
+    playMusic();
+  }
+
+  // 首页显示广告 + 播放背景音乐
+  _showBannerAd();
+  playBgm();
+
+  // 后台切换时暂停/恢复首页背景音乐
   wx.onShow(() => {
-    if (data.page === 1) {
-      setTimeout(() => {
-        // resumeAudio(audio3);
-        resumeMusic()
-        requestAnimationFrame(() => {
-          randomIf();
-          init(
-            ctx,
-            images,
-            width,
-            height,
-            randomAbscissa,
-            randomOrdinate,
-            goBackNum
-          );
-        });
-      }, 0);
-    }
+    if (data.page === 1 && gameState === STATE.PLAYING) resumeMusic();
+    if (gameState === STATE.HOME) resumeBgm();
   });
-  // 进入后台时
   wx.onHide(() => {
-    if (data.page === 1) {
-      // 没成功是因为不是openid没权限。。。。服了
-      // wx.setStorage({
-      //         key: 'count',
-      //         data: data.count,
-      //         // data: 0,
-      //         success() {
-      //           console.log('存上了',data.count);
-      //        }
-      //   })
-      // needUpdate.update({
-      //   count: data.count, // 将该条数据的 key 指定设置为某个值，
-      //   success: function (res) {
-      //     console.log("更新成功：", res);
-      //   },
-      //   faile: function (e) {
-      //     console.error("更新失败：", e);
-      //   },
-      //   complete: function () {
-      //     console.log("进行过一次更新数据的操作");
-      //   },
-      // });
-    }
+    if (data.page === 1) pauseMusic();
+    pauseBgm();
   });
-  //  }, 0);
+
+  requestAnimationFrame(gameLoop);
 }
